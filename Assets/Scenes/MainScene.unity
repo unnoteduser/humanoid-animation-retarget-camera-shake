@@ -5292,7 +5292,6 @@ GameObject:
   - component: {fileID: 1204205430}
   - component: {fileID: 1204205429}
   - component: {fileID: 1204205428}
-  - component: {fileID: 1204205427}
   m_Layer: 0
   m_Name: 'Main Camera '
   m_TagString: MainCamera
@@ -5300,27 +5299,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!95 &1204205427
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1204205426}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 65d2fd378850874468f33c0ff79747ea, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &1204205428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5341,7 +5319,7 @@ MonoBehaviour:
   minHeight: 1
   maxHeight: 5
   transitionSpeed: 0
-  shakeIntensity: 0
+  shakeIntensity: 0.05
 --- !u!114 &1204205429
 MonoBehaviour:
   m_ObjectHideFlags: 0

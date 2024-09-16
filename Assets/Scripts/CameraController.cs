@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class CameraController : MonoBehaviour
 {
@@ -14,13 +15,14 @@ public class CameraController : MonoBehaviour
     private float currentRotationAngle;
     private float currentHeight;
     private float currentDistance;
-    private Animator animator;
     private Vector3 initialOffset; // Store the initial offset
 
     // Custom properties for animation
     public float shakeIntensity = 0.1f; // Reduced intensity for less amplitude
     private float shakeTime = 0f;
     private float shakeFrequency = 10f; // Increased frequency for sharper movements
+    private bool shouldShake = false; // Flag to control shake
+    private bool shakeEnabled = true; // Flag to enable/disable shake
 
     void Start()
     {
@@ -31,17 +33,14 @@ public class CameraController : MonoBehaviour
 
         // Store the initial offset
         initialOffset = offset;
-
-        // Get the Animator component
-        animator = GetComponent<Animator>();
     }
 
     void Update()
     {
-        // Toggle the Animator component on key press "P"
+        // Toggle the shake effect on key press "P"
         if (Input.GetKeyDown(KeyCode.P))
         {
-            animator.enabled = !animator.enabled;
+            shakeEnabled = !shakeEnabled;
         }
 
         // Check if the right mouse button is pressed
@@ -75,8 +74,8 @@ public class CameraController : MonoBehaviour
         Quaternion rotation = Quaternion.Euler(0, currentRotationAngle, 0);
         Vector3 position = target.position - (rotation * Vector3.forward * currentDistance) + (Vector3.up * currentHeight);
 
-        // Apply smooth shake effect using Perlin noise if the animator is enabled
-        if (animator.enabled)
+        // Apply smooth shake effect using Perlin noise if shouldShake and shakeEnabled are true
+        if (shouldShake && shakeEnabled)
         {
             shakeTime += Time.deltaTime * shakeFrequency; // Increase the frequency of the shake
             float shakeOffsetX = (Mathf.PerlinNoise(shakeTime, 0) - 0.5f) * shakeIntensity;
@@ -88,18 +87,23 @@ public class CameraController : MonoBehaviour
         // Apply the new position and rotation to the camera
         transform.position = position;
         transform.LookAt(target.position + Vector3.up * offset.y); // Ensure the camera looks at the target's height
+    }
 
-        // Update the animator based on the player's state if the animator is enabled
-        if (animator.enabled)
-        {
-            PlayerController playerController = target.GetComponent<PlayerController>();
-            if (playerController != null)
-            {
-                animator.SetBool("isRunning", playerController.IsRunning);
-            }
-        }
+    // Method to trigger the camera shake
+    public void TriggerShake()
+    {
+        StartCoroutine(ShakeCoroutine());
+    }
+
+    private IEnumerator ShakeCoroutine()
+    {
+        shouldShake = true;
+        yield return new WaitForSeconds(0.1f); // Duration of the shake
+        shouldShake = false;
     }
 }
+
+
 
 
 

@@ -15,11 +15,13 @@ public class PlayerController : MonoBehaviour
     private float _targetRotation = 0.0f;
     private float _rotationVelocity;
     private GameObject _mainCamera;
+    private CameraController _cameraController;
 
     private void Start()
     {
         animator = GetComponent<Animator>();
         _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+        _cameraController = _mainCamera.GetComponent<CameraController>();
     }
 
     private void Update()
@@ -72,7 +74,17 @@ public class PlayerController : MonoBehaviour
         float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity, RotationSmoothTime);
         transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
     }
+
+    // Method to trigger camera shake via Animation Event
+    public void TriggerFootstepShake()
+    {
+        if (_cameraController != null)
+        {
+            _cameraController.TriggerShake();
+        }
+    }
 }
+
 
 
 
