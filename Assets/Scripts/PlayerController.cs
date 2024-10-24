@@ -1,89 +1,101 @@
 using UnityEngine;
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
-    public float MoveSpeed = 2.0f;
-    public float SprintSpeed = 5.335f;
-    public float RotationSmoothTime = 0.12f;
-    public float SpeedChangeRate = 10.0f;
-    public float rotationSpeed = 100f; // Added rotation speed variable
+    public float moveSpeed = 2.0f, sprintSpeed = 5.335f, rotationSmoothTime = 0.12f, speedChangeRate = 10.0f, rotationSpeed = 100f;
+    public GameObject footstepDustPrefab;
+    public AudioClip[] footstepSounds;
 
     private Animator animator;
-    public bool IsRunning { get; private set; } // Public property to expose isRunning
-
-    private float _speed;
-    private float _targetRotation = 0.0f;
-    private float _rotationVelocity;
-    private GameObject _mainCamera;
-    private CameraController _cameraController;
+    private float speed, targetRotation = 0.0f, rotationVelocity;
+    private GameObject mainCamera;
+    private CameraController cameraController;
+    private Transform leftFoot, rightFoot;
+    private AudioSource audioSource;
+    public bool IsRunning { get; private set; }
 
     private void Start()
     {
         animator = GetComponent<Animator>();
-        _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-        _cameraController = _mainCamera.GetComponent<CameraController>();
+        mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+        cameraController = mainCamera.GetComponent<CameraController>();
+        leftFoot = GameObject.FindGameObjectWithTag("LeftFoot")?.transform;
+        rightFoot = GameObject.FindGameObjectWithTag("RightFoot")?.transform;
+        audioSource = gameObject.AddComponent<AudioSource>();
     }
 
     private void Update()
     {
         IsRunning = Input.GetKey(KeyCode.W);
         animator.SetBool("isRunning", IsRunning);
-
-        if (IsRunning)
-        {
-            Move();
-        }
-
+        if (IsRunning) Move();
         Turn();
     }
 
     private void Move()
     {
-        float targetSpeed = Input.GetKey(KeyCode.LeftShift) ? SprintSpeed : MoveSpeed;
-
+        float targetSpeed = Input.GetKey(KeyCode.LeftShift) ? sprintSpeed : moveSpeed;
         if (!IsRunning) targetSpeed = 0.0f;
-
         float currentHorizontalSpeed = new Vector3(transform.forward.x, 0.0f, transform.forward.z).magnitude;
         float speedOffset = 0.1f;
-
         if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)
         {
-            _speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed, Time.deltaTime * SpeedChangeRate);
-            _speed = Mathf.Round(_speed * 1000f) / 1000f;
+            speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed, Time.deltaTime * speedChangeRate);
+            speed = Mathf.Round(speed * 1000f) / 1000f;
         }
-        else
-        {
-            _speed = targetSpeed;
-        }
-
-        Vector3 movement = transform.forward * _speed * Time.deltaTime;
+        else speed = targetSpeed;
+        Vector3 movement = transform.forward * speed * Time.deltaTime;
         transform.Translate(movement, Space.World);
     }
 
     private void Turn()
     {
-        if (Input.GetKey(KeyCode.A))
-        {
-            _targetRotation -= rotationSpeed * Time.deltaTime;
-        }
-        else if (Input.GetKey(KeyCode.D))
-        {
-            _targetRotation += rotationSpeed * Time.deltaTime;
-        }
-
-        float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity, RotationSmoothTime);
+        if (Input.GetKey(KeyCode.A)) targetRotation -= rotationSpeed * Time.deltaTime;
+        else if (Input.GetKey(KeyCode.D)) targetRotation += rotationSpeed * Time.deltaTime;
+        float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref rotationVelocity, rotationSmoothTime);
         transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
     }
 
-    // Method to trigger camera shake via Animation Event
-    public void TriggerFootstepShake()
+    public void PlayFootstepEffects()
     {
-        if (_cameraController != null)
+        CreateFootstepDust();
+        PlayFootstepSound();
+    }
+
+    private void CreateFootstepDust()
+    {
+        if (footstepDustPrefab != null)
         {
-            _cameraController.TriggerShake();
+            StartCoroutine(DestroyAfterPlay(Instantiate(footstepDustPrefab, leftFoot.position, Quaternion.identity)));
+            StartCoroutine(DestroyAfterPlay(Instantiate(footstepDustPrefab, rightFoot.position, Quaternion.identity)));
+        }
+        else Debug.LogError("Footstep dust prefab is not assigned.");
+    }
+
+    private IEnumerator DestroyAfterPlay(GameObject particleSystemObject)
+    {
+        ParticleSystem ps = particleSystemObject.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            yield return new WaitForSeconds(ps.main.duration);
+            Destroy(particleSystemObject);
         }
     }
+
+    private void PlayFootstepSound()
+    {
+        if (footstepSounds.Length > 0)
+            audioSource.PlayOneShot(footstepSounds[Random.Range(0, footstepSounds.Length)]);
+    }
+
+    public void TriggerFootstepShake() => cameraController?.TriggerShake();
 }
+
+
+
+
+
 
 
 
